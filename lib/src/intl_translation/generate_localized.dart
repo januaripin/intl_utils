@@ -93,6 +93,11 @@ class MessageGeneration {
   /// so it's left undefined.
   String? package;
 
+  /// Should we use deferred loading for the generated libraries.
+  bool supportPackage = false;
+
+  String messageLookupPrefix = 's';
+
   bool get releaseMode => codegenMode == 'release';
 
   bool get jsonMode => false;
@@ -300,6 +305,11 @@ import 'package:$intlImportPath/src/intl_helpers.dart';
   }
 }
 
+${supportPackage ? '''
+MessageLookup ${messageLookupPrefix}MessageLookup =
+      UninitializedLocaleData('initializeMessages(<locale>)', null);
+''' : ''}
+
 /// User programs should call this before using [localeName] for messages.
 Future<bool> initializeMessages(String localeName) ${useDeferredLoading ? 'async ' : ''}{
   var availableLocale = Intl.verifiedLocale(
@@ -311,8 +321,8 @@ Future<bool> initializeMessages(String localeName) ${useDeferredLoading ? 'async
   }
   var lib = _deferredLibraries[availableLocale];
   ${useDeferredLoading ? 'await (lib == null ? new Future.value(false) : lib());' : 'lib == null ? new SynchronousFuture(false) : lib();'}
-  initializeInternalMessageLookup(() => new CompositeMessageLookup());
-  messageLookup.addLocale(availableLocale, _findGeneratedMessagesFor);
+  ${supportPackage ? '${messageLookupPrefix}MessageLookup = new CompositeMessageLookup();' : 'initializeInternalMessageLookup(() => new CompositeMessageLookup());'}
+  ${supportPackage ? '${messageLookupPrefix}MessageLookup' : 'messageLookup'}.addLocale(availableLocale, _findGeneratedMessagesFor);
   return ${useDeferredLoading ? 'new Future.value(true)' : 'new SynchronousFuture(true)'};
 }
 

@@ -31,6 +31,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:intl_utils/src/constants/constants.dart';
 import 'package:path/path.dart' as path;
 
 // Due to a delay in the maintenance of the 'intl_translation' package,
@@ -52,9 +53,16 @@ class IntlTranslationHelper {
   final Map<String, List<MainMessage>> messages =
       {}; // Track of all processed messages, keyed by message name
 
-  IntlTranslationHelper([bool useDeferredLoading = false]) {
+  IntlTranslationHelper([
+    bool useDeferredLoading = false,
+    bool supportPackage = false,
+    String? messageLookupPrefix,
+  ]) {
     extraction.suppressWarnings = true;
     generation.useDeferredLoading = useDeferredLoading;
+    generation.supportPackage = supportPackage;
+    generation.messageLookupPrefix =
+        messageLookupPrefix ?? defaultClassName.toLowerCase();
     generation.generatedFilePrefix = '';
   }
 

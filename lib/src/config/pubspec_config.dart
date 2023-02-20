@@ -11,6 +11,7 @@ class PubspecConfig {
   String? _outputDir;
   bool? _useDeferredLoading;
   LocalizelyConfig? _localizelyConfig;
+  bool? _supportPackage;
 
   PubspecConfig() {
     var pubspecFile = getPubspecFile();
@@ -51,6 +52,9 @@ class PubspecConfig {
         : null;
     _localizelyConfig =
         LocalizelyConfig.fromConfig(flutterIntlConfig['localizely']);
+    _supportPackage = flutterIntlConfig['support_package'] is bool
+        ? flutterIntlConfig['support_package']
+        : null;
   }
 
   bool? get enabled => _enabled;
@@ -66,6 +70,8 @@ class PubspecConfig {
   bool? get useDeferredLoading => _useDeferredLoading;
 
   LocalizelyConfig? get localizelyConfig => _localizelyConfig;
+
+  bool? get supportPackage => _supportPackage;
 }
 
 class LocalizelyConfig {

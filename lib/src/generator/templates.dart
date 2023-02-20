@@ -2,12 +2,16 @@ import '../utils/utils.dart';
 import 'label.dart';
 
 String generateL10nDartFileContent(
-    String className, List<Label> labels, List<String> locales,
-    [bool otaEnabled = false]) {
+  String className,
+  List<Label> labels,
+  List<String> locales, [
+  bool otaEnabled = false,
+  bool supportPackage = false,
+]) {
   return """
 // GENERATED CODE - DO NOT MODIFY BY HAND
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';${otaEnabled ? '\n${_generateLocalizelySdkImport()}' : ''}
+import 'package:intl/intl.dart' ${supportPackage ? ' as intl' : ''};${otaEnabled ? '\n${_generateLocalizelySdkImport()}' : ''}
 import 'intl/messages_all.dart';
 
 // **************************************************************************
@@ -34,9 +38,9 @@ class $className {
 
   static Future<$className> load(Locale locale) {
     final name = (locale.countryCode?.isEmpty ?? false) ? locale.languageCode : locale.toString();
-    final localeName = Intl.canonicalizedLocale(name);${otaEnabled ? '\n${_generateMetadataSetter()}' : ''} 
+    final localeName = ${supportPackage ? 'intl.' : ''}Intl.canonicalizedLocale(name);${otaEnabled ? '\n${_generateMetadataSetter()}' : ''} 
     return initializeMessages(localeName).then((_) {
-      Intl.defaultLocale = localeName;
+      ${supportPackage ? 'intl.' : ''}Intl.defaultLocale = localeName;
       final instance = $className();
       $className._current = instance;
  
@@ -82,6 +86,7 @@ ${locales.map((locale) => _generateLocale(locale)).join("\n")}
     return false;
   }
 }
+${supportPackage ? _generateIntl(className) : ''}
 """
       .trim();
 }
@@ -118,4 +123,52 @@ String _generateMetadata(List<Label> labels) {
     labels.map((label) => label.generateMetadata()).join(',\n'),
     '  };'
   ].join('\n');
+}
+
+String _generateIntl(String className) {
+  var messageLookupPrefix = className.replaceFirst(
+    className.substring(0, 1),
+    className.substring(0, 1).toLowerCase(),
+  );
+  return '''
+    class Intl {
+      static String message(
+        String messageText, {
+        String? desc = '',
+        Map<String, Object>? examples,
+        String? locale,
+        String? name,
+        List<Object>? args,
+        String? meaning,
+        bool? skip,
+      }) =>
+          _message(messageText, locale, name, args, meaning);
+
+      static String _message(
+        String? messageText,
+        String? locale,
+        String? name,
+        List<Object>? args,
+        String? meaning,
+      ) {
+        return _lookupMessage(messageText, locale, name, args, meaning)!;
+      }
+
+      static String? _lookupMessage(
+        String? messageText,
+        String? locale,
+        String? name,
+        List<Object>? args,
+        String? meaning,
+      ) {
+        return ${messageLookupPrefix}MessageLookup.lookupMessage(
+          messageText,
+          locale,
+          name,
+          args,
+          meaning,
+        );
+      }
+    }
+    ''';
 }

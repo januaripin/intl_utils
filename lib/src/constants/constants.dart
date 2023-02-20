@@ -9,3 +9,4 @@ const defaultUploadOverwrite = false;
 const defaultUploadAsReviewed = false;
 const defaultDownloadEmptyAs = 'empty';
 const defaultOtaEnabled = false;
+const defaultSupportPackage = false;
